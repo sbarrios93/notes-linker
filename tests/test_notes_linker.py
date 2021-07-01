@@ -1,7 +1,8 @@
-from yaml import Mark
-from src.markdownNote import MarkdownNote
-from src.traverseFiles import getFilesPaths
-from run import loadFiles 
+from notes_linker import __version__
+
+from notes_linker.modules.markdownNote import MarkdownNote
+from notes_linker.modules.traverseFiles import getFilesPaths
+from notes_linker.run import loadFiles 
 
 TEST_INPUT = 'Lasso Regression'
 
@@ -19,8 +20,6 @@ def testLoadFiles():
     objects = loadFiles('notes')
     assert objects['lasso-regression'].filenameNormalized == 'lasso-regression'
 
-if __name__ == '__main__':
-    frontMatterExists()
-    publishAttributeExists()
-    testLoadFiles()
-    print('All tests passed')
+
+def test_version():
+    assert __version__ == '0.1.0'

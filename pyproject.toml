@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "notes-linker"
+version = "0.1.0"
+description = "This program will find all the markdown files that contain wiki-style-links (e.g. [[This is a Link]]) pointing to another file, and give them markdown-styled links to upload to a personal website. This will also search for backlinks and add a backlinks section at the end of each file."
+authors = ["sbarrios93 <sbarrios93@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
