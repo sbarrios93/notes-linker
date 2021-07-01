@@ -1,4 +1,3 @@
-import glob
 import os
 
 
@@ -37,5 +36,6 @@ def getFilesPaths(
                 filenameSplit = file.split(ext_)
                 # check if filename can be split by its extension type just once, if not, then this is an invalid name. e.g. "file1.md.md" is not a valid name 
                 assert len(filenameSplit) == 2, f"Filename: {file} is not a valid name"
+                # add filename, path to dictionary
                 fileDict[filenameSplit[0]] = os.path.join(root, file)
     return fileDict
