@@ -1,6 +1,7 @@
 from yaml import Mark
 from src.markdownNote import MarkdownNote
 from src.traverseFiles import getFilesPaths
+from run import loadFiles 
 
 TEST_INPUT = 'Lasso Regression'
 
@@ -12,10 +13,14 @@ def frontMatterExists():
 
 def publishAttributeExists():
     m = frontMatterExists()
-    assert m.publish == "True"
+    assert m.publish == True
 
+def testLoadFiles():
+    objects = loadFiles('notes')
+    assert objects['lasso-regression'].filenameNormalized == 'lasso-regression'
 
 if __name__ == '__main__':
     frontMatterExists()
     publishAttributeExists()
+    testLoadFiles()
     print('All tests passed')
