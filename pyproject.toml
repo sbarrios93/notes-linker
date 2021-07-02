@@ -6,10 +6,12 @@ authors = ["sbarrios93 <sbarrios93@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+regex = "^2021.7.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
 black = "^21.6b0"
+ipykernel = "^6.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
