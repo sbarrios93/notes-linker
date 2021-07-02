@@ -66,6 +66,7 @@ class MarkdownNote:
         # (besides the frontmatter)
         # functions
         if self.hasContent:
+            # TODO: even if there is content and a front matter, the class will throw an error if it cant find a H1 header. This case needs to be taken into account
             self.fileTitle = self._getTitle()
             self.fileWikiLinks = self._getWikiLinks()
             self.fileWikiLinksText = self._getWikiLinksText()

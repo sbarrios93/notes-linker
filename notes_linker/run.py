@@ -1,6 +1,11 @@
 from notes_linker.modules.traverseFiles import getFilesPaths
 from notes_linker.modules.markdownNote import MarkdownNote
 
+# TODO: append loopSearchBackLinks content to each markdown file.
+# TODO: rename files
+# TODO: change wikilinks to markdown links.
+# TODO: move images to correct directory
+
 def loadFiles(path: str = 'notes', quiet: bool = True):
     # load the name of markdown files and the path to each of them in a dict
     filesDict = getFilesPaths(path)
@@ -19,9 +24,14 @@ def loadFiles(path: str = 'notes', quiet: bool = True):
     return objectsDict
 
 
-# TODO: loop through objects and append which other files reference said object
 def loopSearchBackLinks(objects: dict) -> dict:
     # generate a dict with keys of objects dict and empty lists as values
     backlinks = {key: [] for key in objects.keys()}
     for key, value in backlinks.items():
-        
+        for title, sentence in objects[key].fileWikiLinksSentences.items():
+            # following temp list will look for the normalized name of the file for the title we are 
+            # iterating over
+            tempList = [name for name, obj in objects.items() if obj.filename == title]
+            if tempList:
+                backlinks[tempList[0]].append(sentence)
+    return backlinks
