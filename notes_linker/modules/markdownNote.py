@@ -160,7 +160,7 @@ class MarkdownNote:
 
         return frontMatterDict
 
-    def _checkHasContent(self):
+    def _checkHasContent(self) -> bool:
         if self.frontMatterExists:
             return True if self.regexContentPostFrontMatter.findall(self.fileText) else False
         else: return True if self.regexContentNoFrontMatter.findall(self.fileText) else False
