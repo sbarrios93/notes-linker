@@ -21,12 +21,12 @@ class MarkdownNote:
         self.fileExtension = ".md"
         self.fileText = self._getText()
 
-        self.fileTitle = None 
-        self.fileWikiLinks = None 
-        self.fileWikiLinksText = None 
-        self.filenameNormalized = None 
-        self.fullCurrentImageDir = None 
-        self.fullNormalizedImageDir = None 
+        self.fileTitle = None
+        self.fileWikiLinks = None
+        self.fileWikiLinksText = None
+        self.filenameNormalized = None
+        self.fullCurrentImageDir = None
+        self.fullNormalizedImageDir = None
 
 
         self.publish = False
@@ -78,13 +78,13 @@ class MarkdownNote:
             # if quiet is set to true, show warning when file has no content besides frontmatter
             if not self.quiet:
                 warnings.warn(f"File {filename} ({filePath}) has no content.")
-        
+
 
         # modify type of value in self.publish
         if not isinstance(self.publish, bool):
             if (self.publish == "True") or (self.publish == "true"):
                 self.publish = True
-            else: 
+            else:
                 self.publish = False
 
     def _getText(self) -> str:
@@ -107,7 +107,7 @@ class MarkdownNote:
             regex_ = self.regexWikiLinkSentences(link)
             sentencesDict[link] =  regex_.findall(self.fileText)
         return sentencesDict
-            
+
 
     def _normalizeFilename(self) -> str:
         return self.filename.lower().replace(" ", "-")
