@@ -1,5 +1,5 @@
-from src.traverseFiles import getFilesPaths
-from src.markdownNote import MarkdownNote
+from notes_linker.modules.traverseFiles import getFilesPaths
+from notes_linker.modules.markdownNote import MarkdownNote
 
 def loadFiles(path: str = 'notes', quiet: bool = True):
     # load the name of markdown files and the path to each of them in a dict
@@ -17,6 +17,7 @@ def loadFiles(path: str = 'notes', quiet: bool = True):
         if mdNote.publish == True and mdNote.hasContent == True:
             objectsDict[mdNote.filenameNormalized] = mdNote
     return objectsDict
+
 
 # TODO: loop through objects and append which other files reference said object
 def loopSearchBackLinks(objects: dict) -> dict:
