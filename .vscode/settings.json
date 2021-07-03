@@ -2,13 +2,6 @@
     "python.testing.pytestArgs": [
         "tests"
     ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.nosetestsEnabled": false,
-    "python.testing.pytestEnabled": true,
-    "python.linting.pylintPath": "/Users/seba/Library/Caches/pypoetry/virtualenvs/notes-linker-M8m_UDmX-py3.9/bin/pylint",
-    "python.linting.flake8Enabled": true,
     "python.linting.enabled": true,
-    "python.linting.pylamaEnabled": false,
-    "python.linting.mypyEnabled": false,
-    "python.linting.pylintEnabled": false
+    "python.linting.pylamaEnabled": true
 }

@@ -1,4 +1,5 @@
 import os
+from notes_linker.modules.markdownNote import MarkdownNote
 
 
 def getFilesPaths(
@@ -34,8 +35,27 @@ def getFilesPaths(
             if file.endswith(ext_):
                 # split the filename on its extension, to get a clean file name
                 filenameSplit = file.split(ext_)
-                # check if filename can be split by its extension type just once, if not, then this is an invalid name. e.g. "file1.md.md" is not a valid name 
+                # check if filename can be split by its extension type just once, if not, then this is an invalid name. e.g. "file1.md.md" is not a valid name
                 assert len(filenameSplit) == 2, f"Filename: {file} is not a valid name"
                 # add filename, path to dictionary
                 fileDict[filenameSplit[0]] = os.path.join(root, file)
     return fileDict
+
+
+def loadFiles(path: str = "notes", quiet: bool = True):
+    # load the name of markdown files and the path to each of them in a dict
+    filesDict = getFilesPaths(path)
+
+    # objectsDict will be the dictionary returned from the function, where key = normalized file
+    # name and value = MarkdownNote object
+    objectsDict = dict()
+
+    # loop through each file and make a MarkdownNote object for each file
+    # then get the normalized file name from each object and make entry in dictionary
+    # where key is object's normalized name and value is the object
+    for file, filePath in filesDict.items():
+        mdNote = MarkdownNote(file, filePath, quiet=quiet)
+        # don't iterate if value of publish of the note is set to False or the note has no content
+        if mdNote.publish and mdNote.hasContent:
+            objectsDict[mdNote.filenameNormalized] = mdNote
+    return objectsDict

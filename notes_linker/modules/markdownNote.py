@@ -28,13 +28,11 @@ class MarkdownNote:
         self.fullCurrentImageDir = None
         self.fullNormalizedImageDir = None
 
-
         self.publish = False
+        self.WikiLinksSection = None
 
         # regular expressions
-        self.regexHeaderOne = regex.compile(
-            r"^(#[^#].*)", re.MULTILINE
-        )  # this looks for the H1 headers in the file
+        self.regexHeaderOne = regex.compile(r"^(#[^#].*)", re.MULTILINE)  # this looks for the H1 headers in the file
 
         self.regexWikiLink = regex.compile(
             r"(\[\[.+?\]\])"
@@ -44,11 +42,11 @@ class MarkdownNote:
             r"\[\[(.+?)\]\]"
         )  # this will look for all wiki-link-style strings (e.g. [[This is a WikiLink]] -> This is a WikiLink)
 
-        self.regexWikiLinkSentences = lambda _wikiLink : regex.compile(fr"[^.?!\n]*(?<=[.?\s!\n])\[\[{_wikiLink}\]\].*?(?=[\s.?!\n])[^.?!\n]*[.?!\n]") # this lambda function lets you input a wikilink (without the brackets and get all the surrounding text (the sentence where that wikilink exists.))
+        self.regexWikiLinkSentences = lambda _wikiLink: regex.compile(
+            fr"[^.?!\n]*(?<=[.?\s!\n])\[\[{_wikiLink}\]\].*?(?=[\s.?!\n])[^.?!\n]*[.?!\n]"
+        )  # this lambda function lets you input a wikilink (without the brackets and get all the surrounding text (the sentence where that wikilink exists.))
 
-        self.regexFrontMatter = regex.compile(
-            r"^---[\s\S]+?---"
-        )  # find the frontmatter element
+        self.regexFrontMatter = regex.compile(r"^---[\s\S]+?---")  # find the frontmatter element
 
         self.regexContentPostFrontMatter = regex.compile(
             r"^---[\s\S]+?---\K[\s\S]*\S[\s\S]*", flags=regex.DOTALL
@@ -66,7 +64,6 @@ class MarkdownNote:
         # (besides the frontmatter)
         # functions
         if self.hasContent:
-            # TODO: even if there is content and a front matter, the class will throw an error if it cant find a H1 header. This case needs to be taken into account
             self.fileTitle = self._getTitle()
             self.fileWikiLinks = self._getWikiLinks()
             self.fileWikiLinksText = self._getWikiLinksText()
@@ -78,7 +75,6 @@ class MarkdownNote:
             # if quiet is set to true, show warning when file has no content besides frontmatter
             if not self.quiet:
                 warnings.warn(f"File {filename} ({filePath}) has no content.")
-
 
         # modify type of value in self.publish
         if not isinstance(self.publish, bool):
@@ -92,24 +88,26 @@ class MarkdownNote:
             return file.read()
 
     def _getTitle(self) -> str:
-        firstHeaderOne = self.regexHeaderOne.findall(self.fileText)[0]
-        return re.sub(r"^#[ ]*", "", firstHeaderOne)
+        firstHeaderOne = self.regexHeaderOne.findall(self.fileText)
+        return re.sub(r"^#[ ]*", "", firstHeaderOne[0]) if firstHeaderOne else self.filename
 
     def _getWikiLinks(self) -> list:
+        # ...[[This is a WikiLink]]... -> [[This is a WikiLink]]
         return list(set(self.regexWikiLink.findall(self.fileText)))
 
     def _getWikiLinksText(self) -> list:
+        # [[This is a WikiLink]] -> This is a WikiLink
         return list(set(self.regexWikiLinkText.findall(self.fileText)))
 
     def _getWikiLinksSentences(self) -> dict:
         sentencesDict = dict()
         for link in self.fileWikiLinksText:
             regex_ = self.regexWikiLinkSentences(link)
-            sentencesDict[link] =  regex_.findall(self.fileText)
+            sentencesDict[link] = regex_.findall(self.fileText)
         return sentencesDict
 
-
     def _normalizeFilename(self) -> str:
+        # This is a Title -> this-is-a-title
         return self.filename.lower().replace(" ", "-")
 
     def _getCurrentImageDir(self) -> str:
@@ -141,9 +139,7 @@ class MarkdownNote:
             frontMatter = frontMatter[0].replace("---", "").split("\n")
             frontMatter = [re.sub(r"^\s+|\s+$", "", a) for a in frontMatter if a]
             frontMatterDict = {
-                re.search(r"(^[a-zA-Z0-9]*)[^:]", i)
-                .group(0): re.search(r":[ ]*(.*)\s*$", i)
-                .group(1)
+                re.search(r"(^[a-zA-Z0-9]*)[^:]", i).group(0): re.search(r":[ ]*(.*)\s*$", i).group(1)
                 for i in frontMatter
             }
 
@@ -163,4 +159,7 @@ class MarkdownNote:
     def _checkHasContent(self) -> bool:
         if self.frontMatterExists:
             return True if self.regexContentPostFrontMatter.findall(self.fileText) else False
-        else: return True if self.regexContentNoFrontMatter.findall(self.fileText) else False
+        else:
+            return True if self.regexContentNoFrontMatter.findall(self.fileText) else False
+
+    # def addWikiLinksSection(self, )
