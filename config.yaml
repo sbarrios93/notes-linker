@@ -1,0 +1,18 @@
+settings:
+  # default folders
+  inputDir: 'notes'
+  outputDir: 'out/posts'
+  currentImgDir: 'images'
+  outputImgDir: '../src/image/post'
+
+  # default level of the wiki links headings
+  wikiHeadingLevel : 4
+
+frontMatterTemplate:
+  layout: post
+  title:
+  tags: 
+  toc: true
+  icon: 
+  keywords:
+  date:
