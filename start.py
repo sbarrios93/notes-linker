@@ -2,6 +2,7 @@ import yaml
 from notes_linker.run import run
 
 # TODO: move images to correct directory
+# TODO: remove re module, use only regex module
 
 def parseConfig():
     with open("config.yaml", "r") as ymlfile:
