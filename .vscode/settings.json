@@ -3,5 +3,7 @@
         "tests"
     ],
     "python.linting.enabled": true,
-    "python.linting.pylamaEnabled": true
+    "python.linting.pylamaEnabled": true,
+    "python.linting.lintOnSave": true,
+    "restructuredtext.confPath": ""
 }

@@ -1,5 +1,6 @@
 import os
 from notes_linker.modules.markdownNote import MarkdownNote
+import datetime
 
 
 def getFilesPaths(
@@ -42,7 +43,7 @@ def getFilesPaths(
     return fileDict
 
 
-def loadFiles(path: str = "notes", quiet: bool = True):
+def loadFiles(path: str, currentImageDir: str, normalizedImageDir: str, wikiHeadingLevel: int = 4, quiet: bool = True):
     # load the name of markdown files and the path to each of them in a dict
     filesDict = getFilesPaths(path)
 
@@ -54,7 +55,15 @@ def loadFiles(path: str = "notes", quiet: bool = True):
     # then get the normalized file name from each object and make entry in dictionary
     # where key is object's normalized name and value is the object
     for file, filePath in filesDict.items():
-        mdNote = MarkdownNote(file, filePath, quiet=quiet)
+        mdNote = MarkdownNote(
+            file,
+            filePath,
+            modDate = datetime.datetime.utcfromtimestamp(os.path.getmtime(filePath)).strftime('%Y-%m-%d'),
+            currentImageDir=currentImageDir,
+            normalizedImageDir=normalizedImageDir,
+            wikiHeadingLevel=wikiHeadingLevel,
+            quiet=quiet,
+        )
         # don't iterate if value of publish of the note is set to False or the note has no content
         if mdNote.publish and mdNote.hasContent:
             objectsDict[mdNote.filenameNormalized] = mdNote
