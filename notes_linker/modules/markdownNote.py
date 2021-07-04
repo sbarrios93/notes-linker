@@ -24,7 +24,6 @@ class MarkdownNote:
         self.outputLinkPath = outputLinkPath
         self.wikiHeadingLevel = wikiHeadingLevel
         self.quiet = quiet
-        print(self.modDate)
 
         self.fileExtension = ".md"
         self.fileText = self._getText()
