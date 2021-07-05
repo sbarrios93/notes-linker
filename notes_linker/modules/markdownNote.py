@@ -12,8 +12,8 @@ class MarkdownNote:
         modDate,
         currentImageDir: str,
         normalizedImageDir: str,
+        linkImageDir: str,
         outputLinkPath: str = ".",
-        wikiHeadingLevel: int = 4,
         quiet: bool = True,
     ):
         self.filename = filename
@@ -22,11 +22,18 @@ class MarkdownNote:
         self.currentImageDir = currentImageDir
         self.normalizedImageDir = normalizedImageDir
         self.outputLinkPath = outputLinkPath
-        self.wikiHeadingLevel = wikiHeadingLevel
         self.quiet = quiet
 
         self.fileExtension = ".md"
         self.fileText = self._getText()
+        
+        # on tests, the linkImageDir parameter, which is the markdownLinkImageDir config setting in config.yaml was appearing as a tuple...a quick fix was to use the 0 index of the tuple in case it was an iterable item instead of a string
+        if (not isinstance(linkImageDir, str)) and hasattr(linkImageDir, '__iter__'):
+            self.linkImageDir = linkImageDir[0],
+        else:
+            self.linkImageDir = linkImageDir
+        if not isinstance(self.linkImageDir, str):
+            raise TypeError(f"There's an issue with the setting markdownLinkImageDir, current type is {type(self.linkImageDir)} -> it should be a string")
 
         self.fileTitle = None
         self.fileWikiLinks = None
@@ -67,6 +74,9 @@ class MarkdownNote:
         self.regexContentNoFrontMatter = regex.compile(
             r"[\s\S]*\S[\s\S]*", flags=regex.DOTALL
         )  # find everything that there is when there's no front matter
+
+        self.regexLatexDisplay = regex.compile(r'(\\\[)([\s]*)([\s\S]*?)([\s]*?)(\\\])')
+        self.regexLatexInline = regex.compile(r'(\\\()([\s]*)([\s\S]*?)([\s]*?)(\\\))')
 
         # get structure of note
         self.frontMatterDict = self._passFrontMatter()
@@ -178,14 +188,14 @@ class MarkdownNote:
     def addWikiLinksSection(self, linksDict, linksToTitleMap, linksToRelativeLinkMap):
         # create wiki links block of text that will be appended at the end of the markdown file
         if linksDict:
-            self.WikiLinksSection = "\n"
+            self.WikiLinksSection = "\n\n"  " Backlinks {:.backlinks-header}" +"\n"
             for title, sentence in linksDict.items():
                 # titles in linksDict have the form 'this-is-a-title' so we need the proper title
                 properTitle = linksToTitleMap[title]
                 # we need to get the proper link that will be printed in the md file
                 relativeLink = linksToRelativeLinkMap[title]
                 # for each note in the backlinks, make a h4 header with a link to that note
-                self.WikiLinksSection += "#" * self.wikiHeadingLevel + f" [{properTitle}]({relativeLink})\n\n"
+                self.WikiLinksSection += "\n" + f" [{properTitle}](/{relativeLink.strip()})\n\n"
                 if sentence:
                     # then add each sentence as a bullet point
                     for s in sentence:
@@ -195,9 +205,16 @@ class MarkdownNote:
 
     def replaceLinks(self, notes: dict) -> str:
         # this function will take the whole text from the markdown
-        # and replace all the [[links in this form]] with real markdown links
-        content = self.fileText
+        # and replace all the [[links in this form]] with real markdown links. It will also call the subfunction replaceImageLinks to replace links with links formatted for the website 
+        def replaceImageLinks(content) -> str:
+            # this function will replace all the image links in markdown for valid links to the website
+            regexString = regex.compile(r'!\[([^\]]*)\]\(.*\/(?<filename>.*?)(?=\"|\))(?<optionalpart>\".*\")?\)|!\[([^\]]*)\]\([^\/]*?(?<filename2>.*?)(?=\"|\))(?<optionalpart2>\".*\")?\)')  # find all text in the form ![Title](url "alt")
+            # create markdown pointer to image directory
+            linkImageDirWithFilename = os.path.join(self.linkImageDir, self.filenameNormalized)
+            return regex.sub(regexString, fr'![\1](/{linkImageDirWithFilename}/\2 \3)', content)
 
+
+        content = self.fileText
         # the dict is in the form
         # {'this-is-a-title': MarkdownNote.Object} so we are going to change the keys to
         # match them with the wikiLinks attribute of the note, which has links in the shape
@@ -209,10 +226,12 @@ class MarkdownNote:
                 linkCleaned = link.replace("[[", "").replace("]]", "")
                 content = content.replace(link, linkCleaned)
             else:
-                constructedLink = f"[{(notes[link].fileTitle).strip()}]('{notes[link].fullOutputLinkPath}')"
+                constructedLink = f"[{(notes[link].fileTitle).strip()}](/{(notes[link].filenameNormalized).strip()})"
                 content = content.replace(link, constructedLink)
-        self.fullOutputText = content
 
+        content = replaceImageLinks(content=content)    
+        self.fullOutputText = content
+    
     def updateFrontMatter(self, frontMatterTemplate: dict, outputText: bool = True) -> str:
         templateCopy = frontMatterTemplate.copy()
         templateCopy.update(self.frontMatterDict)
@@ -220,13 +239,33 @@ class MarkdownNote:
             templateCopy["title"] = self.fileTitle
         if templateCopy.get("date", None) is None and self.modDate:
             templateCopy["date"] = self.modDate
+        if templateCopy.get("toc", None) is not None:
+            templateCopy["toc"] = str(templateCopy["toc"]).lower()
+        
+        # there's an issue in the website where if there's a latex delimiter in the first 140 characters, json-ld will throw an error because it uses those characters to read the config. They way to fix this is to add "dump" to a description tag in the frontmatter.
+        if regex.search(r'\\\(|\\\[|\$', self.fullOutputText):
+            if min(regex.search(r'\\\(|\\\[|\$', self.fullOutputText).span()) <= 220:
+                if templateCopy.get("description", None) is not None:
+                    templateCopy["description"] += " | dump"
+                else:
+                    templateCopy["description"] = "dump"
+            
         self.outputFrontMatterDict = templateCopy
         if outputText:
             self.outputFrontMatterText += "---\n"
             for key, value in self.outputFrontMatterDict.items():
-                self.outputFrontMatterText += f"{key}: {value}\n"
+                if value is not None:
+                    self.outputFrontMatterText += f"{key}: {value}\n"
             self.outputFrontMatterText += "---\n\n"
 
+
+    def transformLatexDelimiters(self, content):
+        # \[ x + 2 \] -> $$x+2$$ and \(x + 2\) -> $x+2$
+        fixedDisplay = regex.sub(self.regexLatexDisplay, r'$$\3$$', content)
+        #now fix inline and return
+        return regex.sub(self.regexLatexInline, r'$\3$', fixedDisplay)
+
+        
     def joinText(self):
         # this will join outputFrontMatterText, fileText, WikiLinksSection
         ####
@@ -236,16 +275,15 @@ class MarkdownNote:
             raise Exception("No text found after frontmatter while attempting to join output text")
         # strip leading/trailing whitespace
         postFrontMatter = postFrontMatter[0].strip()
-        # create markdown pointer to image directory
-        normalizedImageDirWithFilename = os.path.join(self.normalizedImageDir, self.filenameNormalized)
-        self.imagePointer = f"\n{{% assign img-url = '{normalizedImageDirWithFilename}' %}}\n"
+        # run removeBreaksDisplayLatex
+        postFrontMatter = self.transformLatexDelimiters(postFrontMatter)
         # concatenate sections
-        self.fullOutputText = self.outputFrontMatterText + self.imagePointer + postFrontMatter
+        self.fullOutputText = self.outputFrontMatterText + postFrontMatter
         if self.WikiLinksSection is not None:
             self.fullOutputText += self.WikiLinksSection
 
-    def outputFile(self, output):
-        dirOfNote = os.path.join('.', output)
+    def outputFile(self, outputNotesPath) -> None:
+        dirOfNote = os.path.join('.', outputNotesPath)
         if not os.path.exists(dirOfNote):
             os.makedirs(dirOfNote)
         pathOfNote = os.path.join(dirOfNote, self.filenameNormalized + self.fileExtension)

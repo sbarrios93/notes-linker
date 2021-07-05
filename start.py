@@ -1,7 +1,6 @@
 import yaml
 from notes_linker.run import run
 
-# TODO: move images to correct directory
 # TODO: remove re module, use only regex module
 
 def parseConfig():
@@ -18,9 +17,10 @@ def main():
     run(
         input=settings["inputDir"],
         output=settings["outputDir"],
+        outputNotesSubDir=settings["outputNotesSubDir"],
         currentImageDir=settings["currentImgDir"],
         normalizedImageDir=settings["outputImgDir"],
-        wikiHeadingLevel=settings["wikiHeadingLevel"],
+        linkImageDir=settings["markdownLinkImageDir"],
         frontMatterTemplate=frontMatterTemplate,
     )
 

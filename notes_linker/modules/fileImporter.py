@@ -43,7 +43,7 @@ def getFilesPaths(
     return fileDict
 
 
-def loadFiles(path: str, currentImageDir: str, normalizedImageDir: str, wikiHeadingLevel: int = 4, quiet: bool = True):
+def loadFiles(path: str, currentImageDir: str, normalizedImageDir: str,linkImageDir: str, quiet: bool = True):
     # load the name of markdown files and the path to each of them in a dict
     filesDict = getFilesPaths(path)
 
@@ -61,7 +61,7 @@ def loadFiles(path: str, currentImageDir: str, normalizedImageDir: str, wikiHead
             modDate = datetime.datetime.utcfromtimestamp(os.path.getmtime(filePath)).strftime('%Y-%m-%d'),
             currentImageDir=currentImageDir,
             normalizedImageDir=normalizedImageDir,
-            wikiHeadingLevel=wikiHeadingLevel,
+            linkImageDir=linkImageDir,
             quiet=quiet,
         )
         # don't iterate if value of publish of the note is set to False or the note has no content

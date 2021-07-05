@@ -1,18 +1,18 @@
 settings:
   # default folders
-  inputDir: 'notes'
-  outputDir: 'out/posts'
-  currentImgDir: 'images'
-  outputImgDir: '../src/image/post'
+  inputDir: notes
+  outputDir: out
+  outputNotesSubDir: posts
+  currentImgDir: images
+  outputImgDir: src/img/post
+  markdownLinkImageDir: img/post
 
-  # default level of the wiki links headings
-  wikiHeadingLevel : 4
 
 frontMatterTemplate:
   layout: post
   title:
-  tags: 
+  tags: [Uncategorized]
   toc: true
-  icon: 
+  icon: /img/cats/data-science.svg 
   keywords:
   date:
